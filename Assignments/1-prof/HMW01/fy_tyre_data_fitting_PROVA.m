@@ -218,7 +218,7 @@ tyre_coeffs = initialise_tyre_data(R0, Fz0);
 % Fit the pure lateral coefficients
 
 % Optimizer options
-options = optimoptions('fmincon', 'Display', 'iter', ...
+options = optimoptions('fmincon', ...
                        'Algorithm', 'interior-point', ...
                        'MaxFunctionEvaluations', 3000, ...
                        'StepTolerance', 1e-8);
@@ -262,35 +262,35 @@ ylabel('$F_{y0}$ [N]')
 % Fit coefficients with fmincon()
 
 % Guess values for parameters to be optimised
-%    [pCy1  pDy1   pEy1  pKy1  pKy2  pHy1  pVy1]
-P0 = [ 1.3,  2.,  0.,   15,    2,    0,    0];
+%    [pCy1  pDy1   pEy1  pHy1  pKy1  pKy2  pVy1, Fz01]
+P0 = [ 1.3,  2.,   1.,    0.,    0.,    1.,    0.,    700.];
 
 % NOTE: many local minima => limits on parameters are fundamentals
 % Limits for parameters to be optimised
 % 1 < pCy1 < 2
-%    [pCy1  pDy1   pEy1  pKy1  pKy2  pHy1  pVy1]
-lb = [ 1.0,  0.5,  -1.0,    1,  0.1,  -10,  -10];
-ub = [ 2.0,  5.0,   1.0,  100,   10,   10,   10];
-
-% Set fmincon options (optional but recommended to see progress)
-options = optimoptions('fmincon', 'Display', 'iter', 'Algorithm', 'interior-point');
+%    [pCy1  pDy1   pEy1  pKy1  pKy2  pHy1  pVy1, Fz01]
+lb = [ 1.0,  0.5,  -1.0,    1,  0.1,  -10,  -10, 0.];
+ub = [ 2.0,  5.0,   1.0,  100,   10,   10,   10, 0.];
 
 % Force the raw data to match the model's positive/negative convention
 % (If your model outputs positive forces for positive slip, ensure FY_vec does too)
-FY_vec_aligned = abs(FY_vec) .* sign(ALPHA_vec);
+% FY_vec_aligned = abs(FY_vec) .* sign(ALPHA_vec);
 
 % Run the optimizer
-[P_fz_nom, fval, exitflag] = fmincon(@(P)resid_pure_Fy(P, FY_vec_aligned, ALPHA_vec, 0, FZ0, tyre_coeffs),...
-                                     P0, [], [], [], [], lb, ub, [], options);
+% [P_fz_nom, fval, exitflag] = fmincon(@(P)resid_pure_Fy(P, FY_vec_aligned, ALPHA_vec, 0, FZ0, tyre_coeffs),...
+%                                      P0, [], [], [], [], lb, ub, [], options);
+[P_fz_nom, fval, exitflag] = fmincon(@(P)resid_pure_Fy(P, FY_vec, ALPHA_vec, 0, FZ0, tyre_coeffs),...
+                                     P0, [], [], [], [], [], [], [], options);
 
 % Update tyre data with new optimal values
 tyre_coeffs.pCy1 = P_fz_nom(1);
 tyre_coeffs.pDy1 = P_fz_nom(2);
 tyre_coeffs.pEy1 = P_fz_nom(3);
-tyre_coeffs.pKy1 = P_fz_nom(4);
-tyre_coeffs.pKy2 = P_fz_nom(5);
-tyre_coeffs.pHy1 = P_fz_nom(6);
+tyre_coeffs.pHy1 = P_fz_nom(4);
+tyre_coeffs.pKy1 = P_fz_nom(5);
+tyre_coeffs.pKy2 = P_fz_nom(6);
 tyre_coeffs.pVy1 = P_fz_nom(7);
+tyre_coeffs.Fz01 = P_fz_nom(8);
 
 % Update Fy0 coefficients for the experimental value of side slips
 FY0_fz_nom_vec = MF96_FY0(zeros_vec, ALPHA_vec, zeros_vec, FZ0_vec, tyre_coeffs);

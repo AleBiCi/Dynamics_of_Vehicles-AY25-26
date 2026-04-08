@@ -36,10 +36,10 @@ ty_data.Fz01            = Fz0; % Fz01
 ty_data.pCy1            = 1.3;  % Latreal shape factor
 % Peak friction (Typically between 1.0 and 2.5)
 ty_data.pDy1            = 2.0;  % Base peak friction
-ty_data.pDy2            = 0;    % Load dependency of friction
+ty_data.pDy2            = 0.5;    % Load dependency of friction
 ty_data.pDy3            = 0;    % Camber dependency of friction
 % Curvature factor (Usually negative for lateral)
-ty_data.pEy1            = -0.5; % Base curvature
+ty_data.pEy1            = 0.5; % Base curvature
 ty_data.pEy2            = 0;    % Load dependency of curvature
 ty_data.pEy3            = 0;    % Camber dependency of curvature
 ty_data.pEy4            = 0;    % Camber dependency of curvature

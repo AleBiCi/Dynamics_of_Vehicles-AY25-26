@@ -12,17 +12,18 @@ function res = resid_pure_Fy(P,FY,ALPHA,GAMMA,FZ,tyre_data)
     tmp_tyre_data.pCy1 = P(1); 
     tmp_tyre_data.pDy1 = P(2);
     tmp_tyre_data.pEy1 = P(3);
-    tmp_tyre_data.pEy4 = P(4);
-    tmp_tyre_data.pHy1 = P(5);
-    tmp_tyre_data.pKy1 = P(6);
+    tmp_tyre_data.pHy1 = P(4);
+    tmp_tyre_data.pKy1 = P(5);
+    tmp_tyre_data.pKy2 = P(6);
     tmp_tyre_data.pVy1 = P(7);
+    tmp_tyre_data.Fz01 = P(8);
     
    %dfz = (Z - Fz0)./Fz0 ;
     
     % Longitudinal Force (Pure Longitudinal Slip) Equations
     res = 0;
     for i=1:length(ALPHA)
-       fy0  = MF96_FY0(ALPHA(i), 0, GAMMA, FZ, tmp_tyre_data);
+       fy0  = MF96_FY0(0, ALPHA(i), GAMMA, FZ, tmp_tyre_data);
        res = res+(fy0-FY(i))^2;
     end
     
