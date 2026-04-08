@@ -259,7 +259,6 @@ FZ0 = mean(TData0.FZ);
 zeros_vec = zeros(size(TData0.SL));
 ones_vec  = ones(size(TData0.SL));
 FZ0_vec  = tyre_coeffs.FZ0*ones_vec; % vector of nominal load
-
 % Vector of data: longitudinal slip and longitudinal force for nominal
 % load.
 KAPPA_vec = TData0.SL;

@@ -3,8 +3,16 @@ function ty_data = initialise_ty_data(R0, Fz0)
 
 % Tyre structure data initialization
 
+% Meaning of factors
+% B --> Stiffness f.
+% C --> Shape f.
+% D --> Peak f.
+% E --> Curvature f.
+% H --> Horizontal shift
+
 ty_data.FZ0             = Fz0; % Fz0  % Normal load
 ty_data.R0              = R0; % R0  % nominal radius
+% Longitudinal force FX parameters
 ty_data.pCx1            = 1.5; %1; % pCx1
 ty_data.pDx1            = 2.35; %1; % pDx1
 ty_data.pDx2            = 0; % pDx2
@@ -20,25 +28,36 @@ ty_data.pKx2            = 0; % pKx2
 ty_data.pKx3            = 0; % pKx3
 ty_data.pVx1            = 0; % pVx1
 ty_data.pVx2            = 0; % pVx2
-ty_data.Fz01            = 0; % Fz01
-ty_data.pCy1            = 0; % pCy1
-ty_data.pDy1            = 0; % pDy1
-ty_data.pDy2            = 0; % pDy2
-ty_data.pDy3            = 0; % pDy3
-ty_data.pEy1            = 0; % pEy1
-ty_data.pEy2            = 0; % pEy2
-ty_data.pEy3            = 0; % pEy3
-ty_data.pEy4            = 0; % pEy4
-ty_data.pHy1            = 0; % pHy1
-ty_data.pHy2            = 0; % pHy2
-ty_data.pHy3            = 0; % pHy3
-ty_data.pKy1            = 0; % pKy1
-ty_data.pKy2            = 0; % pKy2
-ty_data.pKy3            = 0; % pKy3
-ty_data.pVy1            = 0; % pVy1
-ty_data.pVy2            = 0; % pVy2
-ty_data.pVy3            = 0; % pVy3
-ty_data.pVy4            = 0; % pVy4
+
+% Reference load for scaling
+ty_data.Fz01            = Fz0; % Fz01
+
+% Lateral force FY params
+ty_data.pCy1            = 1.3;  % Latreal shape factor
+% Peak friction (Typically between 1.0 and 2.5)
+ty_data.pDy1            = 2.0;  % Base peak friction
+ty_data.pDy2            = 0;    % Load dependency of friction
+ty_data.pDy3            = 0;    % Camber dependency of friction
+% Curvature factor (Usually negative for lateral)
+ty_data.pEy1            = -0.5; % Base curvature
+ty_data.pEy2            = 0;    % Load dependency of curvature
+ty_data.pEy3            = 0;    % Camber dependency of curvature
+ty_data.pEy4            = 0;    % Camber dependency of curvature
+% Cornering stiffness
+ty_data.pKy1            = 15;   % Max cornering stiffness factor
+ty_data.pKy2            = 2;    % Load at max stiffness
+ty_data.pKy3            = 0;    % Camber dependency of stiffness
+% Horizontal shifts (Ply steer / Conicity / Camber)
+ty_data.pHy1            = 0;    % Base horizontal shift
+ty_data.pHy2            = 0;    % Load dependency of horz. shift
+ty_data.pHy3            = 0;    % Camber dependency of horz. shift
+% Vertical shifts (Ply steer / Conicity / Camber)
+ty_data.pVy1            = 0;    % Base vertical shift
+ty_data.pVy2            = 0;    % Load dependency of vert. shift
+ty_data.pVy3            = 0;    % Camber dependency of vert. shift
+ty_data.pVy4            = 0;    % Load/Camber combined vert. shift
+
+% Aligning torque MZ params
 ty_data.qBz1            = 0; % qBz1
 ty_data.qBz10           = 0; % qBz10
 ty_data.qBz2            = 0; % qBz2
@@ -64,6 +83,7 @@ ty_data.qHz1            = 0; % qHz1
 ty_data.qHz2            = 0; % qHz2
 ty_data.qHz3            = 0; % qHz3
 ty_data.qHz4            = 0; % qHz4
+% Combined slip FX U FY params
 ty_data.rBx2            = 0; % rBx2
 ty_data.rBy1            = 0; % rBy1
 ty_data.rBy2            = 0; % rBy2
@@ -78,8 +98,6 @@ ty_data.rVy3            = 0; % rVy3
 ty_data.rVy4            = 0; % rVy4
 ty_data.rVy5            = 0; % rVy5
 ty_data.rVy6            = 0; % rVy6
-
-
 
 % scaling factor
 ty_data.LCX             = 1; % LCX
