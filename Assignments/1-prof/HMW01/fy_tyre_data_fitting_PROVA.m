@@ -307,26 +307,82 @@ legend('Location', 'best')
 
 
 % comments
-
+% Unconstrained minimization gave best fitting results;
 
 %% Fit coefficient with variable load
 % -----------------------------------------
-% FY vs FZ
+ %  ________     __              ______ ______
+ % |  ____\ \   / /             |  ____|___  /
+ % | |__   \ \_/ /  __   _____  | |__     / / 
+ % |  __|   \   /   \ \ / / __| |  __|   / /  
+ % | |       | |     \ V /\__ \ | |     / /__ 
+ % |_|       |_|      \_/ |___/ |_|    /_____|
+ % 
 % -----------------------------------------
 % extract data with variable load
 [TDataDFz, ~] = intersect_table_data( SL_0, GAMMA_0 );
 
 % side slip
 
+zeros_vec = zeros(size(TDataDFz_s.SA));
+ones_vec  = ones(size(TDataDFz_s.SA));
+FZ0_vec  = tyre_coeffs.FZ0*ones_vec;
+
+ALPHA_vec = TDataDFz.SA;
+FY_vec = TDataDFz.FY;
+% Vector of all FZ values
+FZ_vec = TDataDFz.FZ;
+
+% First approximate guess
+FY0_DFz_guess = MF96_FY0_vec(zeros, ALPHA_vec, zeros, FZ_vec, tyre_coeffs)
+
+% Plot guess data check guess
+figure('Name','Var Fz Guess vs raw')
+plot(ALPHA_vec,FY_vec,'.','Linewidth',2,'DisplayName','raw (Fz0)')
+hold on
+plot(ALPHA_vec,-FY0_guess,'-','Linewidth',2,'DisplayName','Fy0 guess')
+legend
+xlabel('$\alpha$ [-]')
+ylabel('$F_{y0}$ [N]')
+
 % Fit the pure lateral coefficients
 % plot_selected_data
 
-% ...
+%    [pDy2 pEy2 pHy2 pKy2  pVy2]
+P0 = [-0.1 , 0 , 0 , 2 , 0];
 
-% Fit coefficients with fmincon()
-% ...
+[P_dfz,fval,exitflag] = fmincon(@(P)resid_pure_Fy_varFz_(P,FY_vec, ALPHA_vec, 0, FZ_vec, tyre_coeffs),...
+  P0,[],[],[],[],[],[]);
 
-% plot results
+disp(exitflag);
+disp(fval);
+
+% Change tyre data with new optimal values
+tyre_coeffs.pDy2 = P_dfz(1);
+tyre_coeffs.pEy2 = P_dfz(2);
+tyre_coeffs.pHy2 = P_dfz(3);
+tyre_coeffs.pKy2 = P_dfz(4);
+tyre_coeffs.pVy2 = P_dfz(5);
+
+res_FY0_dfz_vec = resid_pure_Fy_varFz_(P_dfz,FY_vec,ALPHA_vec,0 , FZ_vec,tyre_coeffs);
+
+FY0_fz_var_vec1 = MF96_FY0_vec(zeros_vec, ALPHA_vec, zeros_vec, mean(FZ_220.FZ)*ones_vec,tyre_coeffs);
+FY0_fz_var_vec2 = MF96_FY0_vec(zeros_vec, ALPHA_vec, zeros_vec, mean(FZ_700.FZ)*ones_vec,tyre_coeffs);
+FY0_fz_var_vec3 = MF96_FY0_vec(zeros_vec, ALPHA_vec, zeros_vec, mean(FZ_900.FZ)*ones_vec,tyre_coeffs);
+FY0_fz_var_vec4 = MF96_FY0_vec(zeros_vec, ALPHA_vec, zeros_vec, mean(FZ_1120.FZ)*ones_vec,tyre_coeffs);
+
+figure('Name','Fy0-var Fz')
+plot(TDataDFz_s.SA,TDataDFz_s.FY,'o','DisplayName','Fy(raw)')
+hold on
+%plot(TDataSub.KAPPA,FX0_fz_nom_vec,'-')
+%plot(SL_vec,FX0_dfz_vec,'-','LineWidth',2)
+plot(ALPHA_vec,FY0_fz_var_vec1,'-','LineWidth',2,'DisplayName','F_Z = 220N')
+plot(ALPHA_vec,FY0_fz_var_vec2,'-','LineWidth',2,'DisplayName','F_Z = 700N')
+plot(ALPHA_vec,FY0_fz_var_vec3,'-','LineWidth',2,'DisplayName','F_Z = 900N')
+plot(ALPHA_vec,FY0_fz_var_vec4,'-','LineWidth',2,'DisplayName','F_Z = 1120N')
+xlabel('$\alpha$ [-]')
+ylabel('$F_{y0}$ [N]')
+ 
 % comments
 
 
