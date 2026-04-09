@@ -513,12 +513,12 @@ FX0_varGamma_vec5 = MF96_FX0_vec(KAPPA_vec, zeros_vec, mean(GAMMA_5.IA)*ones_vec
 figure('Name','Fx0 vs Gamma')
 plot(KAPPA_vec,TDataGamma.FX,'o','Linewidth',2,'DisplayName','Fx raw')
 hold on
-plot(KAPPA_vec,FX0_varGamma_vec0,'-','Linewidth',2,'DisplayName','IA = 0°')
-plot(KAPPA_vec,FX0_varGamma_vec1,'-','Linewidth',2,'DisplayName','IA = 1°')
-plot(KAPPA_vec,FX0_varGamma_vec2,'-','Linewidth',2,'DisplayName','IA = 2°')
-plot(KAPPA_vec,FX0_varGamma_vec3,'-','Linewidth',2,'DisplayName','IA = 3°')
-plot(KAPPA_vec,FX0_varGamma_vec4,'-','Linewidth',2,'DisplayName','IA = 4°')
-plot(KAPPA_vec,FX0_varGamma_vec5,'-','Linewidth',2,'DisplayName','IA = 5°')
+plot(KAPPA_vec,FX0_varGamma_vec0,'-','Linewidth',2,'DisplayName','IA = 0\degree')
+plot(KAPPA_vec,FX0_varGamma_vec1,'-','Linewidth',2,'DisplayName','IA = 1\degree')
+plot(KAPPA_vec,FX0_varGamma_vec2,'-','Linewidth',2,'DisplayName','IA = 2\degree')
+plot(KAPPA_vec,FX0_varGamma_vec3,'-','Linewidth',2,'DisplayName','IA = 3\degree')
+plot(KAPPA_vec,FX0_varGamma_vec4,'-','Linewidth',2,'DisplayName','IA = 4\degree')
+plot(KAPPA_vec,FX0_varGamma_vec5,'-','Linewidth',2,'DisplayName','IA = 5\degree')
 xlabel('$\kappa$ [-]')
 ylabel('$F_{x0}$ [N]')
 legend

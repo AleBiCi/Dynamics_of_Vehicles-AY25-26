@@ -126,6 +126,7 @@ tyre_data.FY =  FY(smpl_range);
 tyre_data.MZ =  MZ(smpl_range);
 tyre_data.IA =  IA(smpl_range)*to_rad; % inclination angle in RADIANS
 
+% IA is increased by 1 degree linearly from 0 to 6
 % Extract points at constant inclination angle
 GAMMA_tol = 0.05*to_rad;
 idx.GAMMA_0 = 0.0*to_rad-GAMMA_tol < tyre_data.IA & tyre_data.IA < 0.0*to_rad+GAMMA_tol;
@@ -255,11 +256,11 @@ plot(ALPHA_vec,FY_vec,'.','Linewidth',2,'DisplayName','raw (Fz0)')
 hold on
 plot(ALPHA_vec,-FY0_guess,'-','Linewidth',2,'DisplayName','Fy0 guess')
 legend
-xlabel('$\alpha$ [-]')
+xlabel('$\alpha$ [rad]')
 ylabel('$F_{y0}$ [N]')
 
 
-% Fit coefficients with fmincon()
+% Fit coefficients (pCy1  pDy1   pEy1  pKy1  pKy2  pHy1  pVy1, Fz01)
 
 % Guess values for parameters to be optimised
 %    [pCy1  pDy1   pEy1  pHy1  pKy1  pKy2  pVy1, Fz01]
@@ -297,10 +298,10 @@ FY0_fz_nom_vec = MF96_FY0(zeros_vec, ALPHA_vec, zeros_vec, FZ0_vec, tyre_coeffs)
 
 % Plot the results
 figure('Name','Fy0(Fz0)', 'Color', 'w')
-plot(ALPHA_vec, TData0.FY, 'o', 'DisplayName', 'Fy (raw)')
+plot(ALPHA_vec.*to_deg, TData0.FY, 'o', 'DisplayName', 'Fy (raw)')
 hold on
-plot(ALPHA_vec, -FY0_fz_nom_vec, 'r-', 'LineWidth', 2, 'DisplayName', 'Fy (fitted)')
-xlabel('Slip Angle $\alpha$ [rad]')
+plot(ALPHA_vec.*to_deg, FY0_fz_nom_vec, 'r-', 'LineWidth', 2, 'DisplayName', 'Fy (fitted)')
+xlabel('Slip Angle $\alpha$ [deg]')
 ylabel('Lateral Force $F_{y0}$ [N]')
 title('Pure Lateral Force Fitting (Nominal Load)')
 legend('Location', 'best')
@@ -321,11 +322,12 @@ legend('Location', 'best')
 % -----------------------------------------
 % extract data with variable load
 [TDataDFz, ~] = intersect_table_data( SL_0, GAMMA_0 );
+TDataDFz = sortrows(TDataDFz, "SA");
 
 % side slip
 
-zeros_vec = zeros(size(TDataDFz_s.SA));
-ones_vec  = ones(size(TDataDFz_s.SA));
+zeros_vec = zeros(size(TDataDFz.SA));
+ones_vec  = ones(size(TDataDFz.SA));
 FZ0_vec  = tyre_coeffs.FZ0*ones_vec;
 
 ALPHA_vec = TDataDFz.SA;
@@ -334,24 +336,24 @@ FY_vec = TDataDFz.FY;
 FZ_vec = TDataDFz.FZ;
 
 % First approximate guess
-FY0_DFz_guess = MF96_FY0_vec(zeros, ALPHA_vec, zeros, FZ_vec, tyre_coeffs)
+FY0_DFz_guess = MF96_FY0_vec(zeros_vec, ALPHA_vec, zeros_vec, FZ0_vec, tyre_coeffs);
 
 % Plot guess data check guess
 figure('Name','Var Fz Guess vs raw')
-plot(ALPHA_vec,FY_vec,'.','Linewidth',2,'DisplayName','raw (Fz0)')
+plot(ALPHA_vec.*to_deg,FY_vec,'.','Linewidth',2,'DisplayName','raw (Fz0)')
 hold on
-plot(ALPHA_vec,-FY0_guess,'-','Linewidth',2,'DisplayName','Fy0 guess')
+plot(ALPHA_vec.*to_deg,FY0_DFz_guess,'-','Linewidth',2,'DisplayName','Fy0 guess')
 legend
-xlabel('$\alpha$ [-]')
+xlabel('$\alpha$ [deg]')
 ylabel('$F_{y0}$ [N]')
 
-% Fit the pure lateral coefficients
+% Fit the pure lateral coefficients (pDy2, pEy2, pHy2, pKy2, pVy2)
 % plot_selected_data
 
 %    [pDy2 pEy2 pHy2 pKy2  pVy2]
 P0 = [-0.1 , 0 , 0 , 2 , 0];
 
-[P_dfz,fval,exitflag] = fmincon(@(P)resid_pure_Fy_varFz_(P,FY_vec, ALPHA_vec, 0, FZ_vec, tyre_coeffs),...
+[P_dfz,fval,exitflag] = fmincon(@(P)resid_pure_Fy_varFz(P,FY_vec, ALPHA_vec, 0, FZ_vec, tyre_coeffs),...
   P0,[],[],[],[],[],[]);
 
 disp(exitflag);
@@ -360,29 +362,29 @@ disp(fval);
 % Change tyre data with new optimal values
 tyre_coeffs.pDy2 = P_dfz(1);
 tyre_coeffs.pEy2 = P_dfz(2);
-tyre_coeffs.pHy2 = P_dfz(3);
-tyre_coeffs.pKy2 = P_dfz(4);
+tyre_coeffs.pEy3 = P_dfz(3);
+tyre_coeffs.pHy2 = P_dfz(4);
 tyre_coeffs.pVy2 = P_dfz(5);
 
-res_FY0_dfz_vec = resid_pure_Fy_varFz_(P_dfz,FY_vec,ALPHA_vec,0 , FZ_vec,tyre_coeffs);
+res_FY0_dfz_vec = resid_pure_Fy_varFz(P_dfz,FY_vec,ALPHA_vec,0 , FZ_vec,tyre_coeffs);
 
 FY0_fz_var_vec1 = MF96_FY0_vec(zeros_vec, ALPHA_vec, zeros_vec, mean(FZ_220.FZ)*ones_vec,tyre_coeffs);
-FY0_fz_var_vec2 = MF96_FY0_vec(zeros_vec, ALPHA_vec, zeros_vec, mean(FZ_700.FZ)*ones_vec,tyre_coeffs);
-FY0_fz_var_vec3 = MF96_FY0_vec(zeros_vec, ALPHA_vec, zeros_vec, mean(FZ_900.FZ)*ones_vec,tyre_coeffs);
-FY0_fz_var_vec4 = MF96_FY0_vec(zeros_vec, ALPHA_vec, zeros_vec, mean(FZ_1120.FZ)*ones_vec,tyre_coeffs);
+FY0_fz_var_vec2 = MF96_FY0_vec(zeros_vec, ALPHA_vec, zeros_vec, mean(FZ_440.FZ)*ones_vec,tyre_coeffs);
+FY0_fz_var_vec3 = MF96_FY0_vec(zeros_vec, ALPHA_vec, zeros_vec, mean(FZ_700.FZ)*ones_vec,tyre_coeffs);
+FY0_fz_var_vec4 = MF96_FY0_vec(zeros_vec, ALPHA_vec, zeros_vec, mean(FZ_900.FZ)*ones_vec,tyre_coeffs);
+FY0_fz_var_vec5 = MF96_FY0_vec(zeros_vec, ALPHA_vec, zeros_vec, mean(FZ_1120.FZ)*ones_vec,tyre_coeffs);
 
 figure('Name','Fy0-var Fz')
-plot(TDataDFz_s.SA,TDataDFz_s.FY,'o','DisplayName','Fy(raw)')
+plot(ALPHA_vec.*to_deg,TDataDFz.FY,'o','DisplayName','Fy(raw)')
 hold on
-%plot(TDataSub.KAPPA,FX0_fz_nom_vec,'-')
-%plot(SL_vec,FX0_dfz_vec,'-','LineWidth',2)
-plot(ALPHA_vec,FY0_fz_var_vec1,'-','LineWidth',2,'DisplayName','F_Z = 220N')
-plot(ALPHA_vec,FY0_fz_var_vec2,'-','LineWidth',2,'DisplayName','F_Z = 700N')
-plot(ALPHA_vec,FY0_fz_var_vec3,'-','LineWidth',2,'DisplayName','F_Z = 900N')
-plot(ALPHA_vec,FY0_fz_var_vec4,'-','LineWidth',2,'DisplayName','F_Z = 1120N')
-xlabel('$\alpha$ [-]')
+plot(ALPHA_vec.*to_deg,FY0_fz_var_vec1,'-','LineWidth',2,'DisplayName','F_Z = 220N')
+plot(ALPHA_vec.*to_deg,FY0_fz_var_vec2,'-','LineWidth',2,'DisplayName','F_Z = 440N')
+plot(ALPHA_vec.*to_deg,FY0_fz_var_vec3,'-','LineWidth',2,'DisplayName','F_Z = 700N')
+plot(ALPHA_vec.*to_deg,FY0_fz_var_vec4,'-','LineWidth',2,'DisplayName','F_Z = 900N')
+plot(ALPHA_vec.*to_deg,FY0_fz_var_vec5,'-','LineWidth',2,'DisplayName','F_Z = 1120N')
+xlabel('$\alpha$ [deg]')
 ylabel('$F_{y0}$ [N]')
- 
+
 % comments
 
 
@@ -392,18 +394,70 @@ ylabel('$F_{y0}$ [N]')
 % -----------------------------------------
 % extract data with variable camber
 [TDataGamma, ~] = intersect_table_data( SL_0, FZ_700 );
+TDataGamma = sortrows(TDataGamma, "SA");
 
 % side slip
+zeros_vec = zeros(size(TDataGamma.SA));
+ones_vec = ones(size(TDataGamma.SA));
 
-% Fit the pure lateral coefficients
-% plot_selected_data
+ALPHA_vec = TDataGamma.SA;
+GAMMA_vec = TDataGamma.IA;
+FY_vec = TDataGamma.FY;
+FZ_vec = TDataGamma.FZ;
+FZ0_vec = tyre_coeffs.FZ0*ones_vec;
 
-% ...
+% First guess of MF parameters for Fy0 with experimental inclination angles
+FY0_varGamma_guess = MF96_FY0_vec(zeros_vec, ALPHA_vec, GAMMA_vec, FZ_vec, tyre_coeffs);
 
-% Fit coefficients with fmincon()
-% ...
+% Plot guess data check guess
+figure('Name','Var IA Guess vs raw')
+plot(ALPHA_vec.*to_deg,FY_vec,'.','Linewidth',2,'DisplayName','raw (Fz0)')
+hold on
+plot(ALPHA_vec.*to_deg,FY0_varGamma_guess,'-','Linewidth',2,'DisplayName','Fy0 guess')
+legend
+xlabel('$\alpha$ [deg]')
+ylabel('$F_{y0}$ [N]')
 
-% plot results
+% Fit the pure lateral coefficients (pDy3 pEy4 pHy3 pKy3 pVy3 pVy4)
+
+% First guess of variable gamma params
+%    (pDy3 pEy4 pHy3 pKy3 pVy3 pVy4)
+P0 = [0.,  0.,  0.,  0.,  0.,  0.];
+
+% Run "unconstrained" minimization
+[P_varGamma, fval, exitflag] = fmincon(@(P)resid_pure_Fy_varGamma(P, FY_vec, ALPHA_vec,...
+    GAMMA_vec, tyre_coeffs.FZ0, tyre_coeffs), P0, [],[],[],[],[],[]);
+
+% Assign computed best parameters
+tyre_coeffs.pDy3 = P_varGamma(1);
+tyre_coeffs.pEy4 = P_varGamma(2);
+tyre_coeffs.pHy3 = P_varGamma(3);
+tyre_coeffs.pKy3 = P_varGamma(4);
+tyre_coeffs.pVy3 = P_varGamma(5);
+tyre_coeffs.pVy4 = P_varGamma(6);
+
+% Recompute FY0 for each Gamma value and nominal load
+FY0_varGamma_vec0 = MF96_FY0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_0.IA)*ones_vec, FZ0_vec,tyre_coeffs);
+FY0_varGamma_vec1 = MF96_FY0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_1.IA)*ones_vec, FZ0_vec,tyre_coeffs);
+FY0_varGamma_vec2 = MF96_FY0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_2.IA)*ones_vec, FZ0_vec,tyre_coeffs);
+FY0_varGamma_vec3 = MF96_FY0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_3.IA)*ones_vec, FZ0_vec,tyre_coeffs);
+FY0_varGamma_vec4 = MF96_FY0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_4.IA)*ones_vec, FZ0_vec,tyre_coeffs);
+FY0_varGamma_vec5 = MF96_FY0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_5.IA)*ones_vec, FZ0_vec,tyre_coeffs);
+
+% Plot results
+figure('Name','Fy0 vs Gamma')
+plot(ALPHA_vec.*to_deg,FY_vec,'o','Linewidth',2,'DisplayName','Fy raw')
+hold on
+plot(ALPHA_vec.*to_deg,FY0_varGamma_vec0,'-','Linewidth',2,'DisplayName','IA = 0°')
+plot(ALPHA_vec.*to_deg,FY0_varGamma_vec1,'-','Linewidth',2,'DisplayName','IA = 1°')
+plot(ALPHA_vec.*to_deg,FY0_varGamma_vec2,'-','Linewidth',2,'DisplayName','IA = 2°')
+plot(ALPHA_vec.*to_deg,FY0_varGamma_vec3,'-','Linewidth',2,'DisplayName','IA = 3°')
+plot(ALPHA_vec.*to_deg,FY0_varGamma_vec4,'-','Linewidth',2,'DisplayName','IA = 4°')
+plot(ALPHA_vec.*to_deg,FY0_varGamma_vec5,'-','Linewidth',2,'DisplayName','IA = 5°')
+xlabel('$\alpha$ [deg]')
+ylabel('$F_{y0}$ [N]')
+legend
+
 % comments
 
 %% Combined FX FY using normalised theoretical slip
