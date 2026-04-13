@@ -1,10 +1,10 @@
 % Pure self-aligning torque MZ0
-function [mz0] = MF96_MZ0(kappa, alpha, gamma__w, Fz, tyre_data)
+function [mz0] = MF96_MZ0(kappa, alpha, gamma__w, Fz, tyre_data, R0)
 
  % precode
 
   [alpha__y,By,Cy,Dy,Ey,SVy]            = MF96_FY0_coeffs(kappa, alpha, gamma__w, Fz, tyre_data);
-   [alpha__r,alpha__t,Br,Dr,Bt,Ct,Dt,Et] = MF96_MZ0_coeffs(kappa, alpha, gamma__w, Fz, tyre_data);
+   [alpha__r,alpha__t,Br,Dr,Bt,Ct,Dt,Et] = MF96_MZ0_coeffs(kappa, alpha, gamma__w, Fz, tyre_data, R0);
   
    fy0 = magic_formula(alpha__y, By, Cy, Dy, Ey, SVy);
   

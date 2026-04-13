@@ -1,9 +1,9 @@
 % Coefficients for Magic Formula pure SelfAligning Moment
-function [alpha__r, alpha__t, Br, Dr, Bt, Ct, Dt, Et] = MF96_MZ0_coeffs(kappa, alpha, gamma__w, Fz, tyre_data)
+function [alpha__r, alpha__t, Br, Dr, Bt, Ct, Dt, Et] = MF96_MZ0_coeffs(kappa, alpha, gamma__w, Fz, tyre_data, R0)
 
  % precode
 
-  Fz0             = tyre_data.Fz0;
+  FZ0             = tyre_data.FZ0;
   qBz1            = tyre_data.qBz1;
   qBz10           = tyre_data.qBz10;
   qBz2            = tyre_data.qBz2;
@@ -42,13 +42,18 @@ function [alpha__r, alpha__t, Br, Dr, Bt, Ct, Dt, Et] = MF96_MZ0_coeffs(kappa, a
   FZ01 = (LFZ0 .* FZ0);
   dfz = Fz ./ FZ01 - 1;
   gamma__z = (gamma__w .* LGAMMAY);
+
+  % Recall By, Cy, SHy, SVy from MF96_FY0_coeffs
+  [alpha__y, By, Cy, ~, ~, SVy, Kya] = MF96_FY0_coeffs(kappa, alpha, gamma__w, Fz, tyre_data);
+  SHy = alpha__y - alpha;
+
   SHf = (SHy + SVy ./ Kya);
   SHt = qHz1 + qHz2 .* dfz + (dfz .* qHz4 + qHz3) .* gamma__z;
   alpha__t = alpha + SHt;
   alpha__r = alpha + SHf;
   Bt = (dfz .^ 2 .* qBz3 + dfz .* qBz2 + qBz1) .* (1 + qBz4 .* gamma__z + qBz5 .* abs__reg(gamma__z)) .* LKY ./ LMUY;
   Ct = qCz1;
-  Dt = Fz .* (dfz .* qDz2 + qDz1) .* (qDz4 .* gamma__z .^ 2 + qDz3 .* gamma__z + 1) .* R0 ./ Fz0 .* LT;
+  Dt = Fz .* (dfz .* qDz2 + qDz1) .* (qDz4 .* gamma__z .^ 2 + qDz3 .* gamma__z + 1) .* R0 ./ FZ0 .* LT;
   Et = (dfz .^ 2 .* qEz3 + dfz .* qEz2 + qEz1) .* (0.1e1 + (qEz5 .* gamma__z + qEz4) .* atan((Bt .* Ct .* alpha__t)));
   Br = qBz9 .* LKY ./ LMUY + qBz10 .* By .* Cy;
   Dr = Fz .* (qDz6 + qDz7 .* dfz + (dfz .* qDz9 + qDz8) .* gamma__z) .* R0 .* LMUY .* LMR;

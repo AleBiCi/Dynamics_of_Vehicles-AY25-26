@@ -461,9 +461,39 @@ legend
 % comments
 
 %% Combined FX FY using normalised theoretical slip
-% Using Pure FX and FY with normalised theoretical slip plot and comments
+% Using Combined FX and FY with normalised theoretical slip plot and comments
 % the ellipse of adherence.
 
+
+%% Self-aligning Moment MZ
+% -------------
+%    Pure Mz
+% -------------
+% Keep data with nominal vertical load, k=0 and Gamma=0
+[TDataM0, ~] = intersect_table_data( SL_0, GAMMA_0, FZ_700 );
+% Sort rows by SA
+TDataM0 = sortrows(TDataM0, "SA");
+
+zeros_vec = zeros(size(TDataM0.SA));
+ones_vec = ones(size(TDataM0.SA));
+
+ALPHA_vec = TDataM0.SA;
+FY_vec = TDataM0.FY;
+FZ_vec = TDataM0.FZ;
+FZ0_vec = tyre_coeffs.FZ0*ones_vec;
+MZ_vec = TDataM0.MZ;
+
+% First guess of MF parameters for Fy0 with experimental inclination angles
+MZ0_guess = MF96_MZ0_vec(zeros_vec, ALPHA_vec, zeros_vec, FZ0_vec, tyre_coeffs, R0);
+
+% Plot guess data check guess
+figure('Name','Pure M_z Guess vs raw')
+plot(ALPHA_vec.*to_deg,MZ_vec,'.','Linewidth',2,'DisplayName','raw (M_{z0})')
+hold on
+plot(ALPHA_vec.*to_deg,MZ0_guess,'-','Linewidth',2,'DisplayName','Fy0 guess')
+legend
+xlabel('$\alpha$ [deg]')
+ylabel('$M_{z0}$ [N*m]')
 
 %% Save tyre data structure to mat file
 %
