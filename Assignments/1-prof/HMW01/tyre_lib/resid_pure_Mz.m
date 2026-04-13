@@ -1,4 +1,4 @@
-function res = resid_pure_Mz(P,FY,ALPHA,GAMMA,FZ,tyre_data)
+function res = resid_pure_Mz(P,MZ,ALPHA,GAMMA,FZ,tyre_data,R0)
 
     % ----------------------------------------------------------------------
     %% Compute the residuals - least squares approach - to fit the Mz curve 
@@ -20,15 +20,15 @@ function res = resid_pure_Mz(P,FY,ALPHA,GAMMA,FZ,tyre_data)
     
    %dfz = (Z - Fz0)./Fz0 ;
     
-    % Pure Self-Aligning moment residuals (depend on Fy)
+    % Pure Self-Aligning moment residuals
     res = 0;
     for i=1:length(ALPHA)
-       mz0  = MF96_MZ0(0, ALPHA(i), GAMMA, FZ, tmp_tyre_data);
-       res = res+(mz0-FY(i))^2;
+       mz0  = MF96_MZ0(0, ALPHA(i), GAMMA, FZ, tmp_tyre_data, R0);
+       res = res+(mz0-MZ(i))^2;
     end
     
     % Compute the residuals
-    res = res/sum(FY.^2);
+    res = res/sum(MZ.^2);
     
 
 end

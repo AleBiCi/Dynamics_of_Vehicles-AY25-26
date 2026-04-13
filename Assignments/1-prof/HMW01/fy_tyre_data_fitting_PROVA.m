@@ -465,40 +465,134 @@ legend
 % the ellipse of adherence.
 
 
-%% Self-aligning Moment MZ
+%% Pure Self-aligning Moment MZ
 % -------------
 %    Pure Mz
 % -------------
 % Keep data with nominal vertical load, k=0 and Gamma=0
-[TDataM0, ~] = intersect_table_data( SL_0, GAMMA_0, FZ_700 );
+[TDataM_varFz, ~] = intersect_table_data( SL_0, GAMMA_0, FZ_700 );
 % Sort rows by SA
-TDataM0 = sortrows(TDataM0, "SA");
+TDataM_varFz = sortrows(TDataM_varFz, "SA");
 
-zeros_vec = zeros(size(TDataM0.SA));
-ones_vec = ones(size(TDataM0.SA));
+zeros_vec = zeros(size(TDataM_varFz.SA));
+ones_vec = ones(size(TDataM_varFz.SA));
 
-ALPHA_vec = TDataM0.SA;
-FY_vec = TDataM0.FY;
-FZ_vec = TDataM0.FZ;
+ALPHA_vec = TDataM_varFz.SA;
+FY_vec = TDataM_varFz.FY;
+FZ_vec = TDataM_varFz.FZ;
 FZ0_vec = tyre_coeffs.FZ0*ones_vec;
-MZ_vec = TDataM0.MZ;
+MZ_vec = TDataM_varFz.MZ;
 
-% First guess of MF parameters for Fy0 with experimental inclination angles
-MZ0_guess = MF96_MZ0_vec(zeros_vec, ALPHA_vec, zeros_vec, FZ0_vec, tyre_coeffs, R0);
+% First guess of MF parameters for Mz0 with nominal values
+MZ0_guess = MF96_MZ0_vec(zeros_vec, ALPHA_vec, zeros_vec, FZ_vec, tyre_coeffs, R0);
 
 % Plot guess data check guess
 figure('Name','Pure M_z Guess vs raw')
-plot(ALPHA_vec.*to_deg,MZ_vec,'.','Linewidth',2,'DisplayName','raw (M_{z0})')
+plot(ALPHA_vec.*to_deg,MZ_vec,'.','Linewidth',2,'DisplayName','raw (Mz0)')
 hold on
 plot(ALPHA_vec.*to_deg,MZ0_guess,'-','Linewidth',2,'DisplayName','Fy0 guess')
 legend
 xlabel('$\alpha$ [deg]')
 ylabel('$M_{z0}$ [N*m]')
 
+% Fit the Mz coefficients for nominal conditions
+% (qBz1 qBz9 qBz10 qCz1 qDz1 qDz6 qEz1 qHz1)
+P0 = [10., 0., 0., 1.2, 0.12, 0.001, -1.5, 0.];
+
+[P_mz_varFz, fval, exitflag] = fmincon(@(P)resid_pure_Mz(P, MZ_vec, ALPHA_vec, 0, tyre_coeffs.FZ0, tyre_coeffs, R0),...
+    P0, [], [], [], [], [], []);
+disp(fval)
+disp(exitflag)
+% Update the coefficients after fitting
+tyre_coeffs.qBz1 = P_mz_varFz(1); 
+tyre_coeffs.qBz9 = P_mz_varFz(2);
+tyre_coeffs.qBz10= P_mz_varFz(3);
+tyre_coeffs.qCz1 = P_mz_varFz(4);
+tyre_coeffs.qDz1 = P_mz_varFz(5);
+tyre_coeffs.qDz6 = P_mz_varFz(6);
+tyre_coeffs.qEz1 = P_mz_varFz(7);
+tyre_coeffs.qHz1 = P_mz_varFz(8);
+% Recompute MZ0 with fitted coefficients
+MZ0_nominal = MF96_MZ0_vec(zeros_vec, ALPHA_vec, zeros_vec, FZ0_vec, tyre_coeffs, R0);
+
+% Plot the results
+figure('Name','Mz0', 'Color', 'w')
+plot(ALPHA_vec.*to_deg, MZ_vec, 'o', 'DisplayName', 'Mz (raw)')
+hold on
+plot(ALPHA_vec.*to_deg, MZ0_nominal, 'r-', 'LineWidth', 2, 'DisplayName', 'Mz (fitted)')
+xlabel('Slip Angle $\alpha$ [deg]')
+ylabel('Self-aligning Moment $M_{z0}$ [N]')
+title('Mz Fitting (Nominal Load)')
+legend('Location', 'best')
+
+
+%% Mz with variable Vertical Load Fz
+% k=0, IA=0, variable load
+[TDataM_varFz, ~] = intersect_table_data( SL_0, GAMMA_0 );
+
+% Sort rows by SA
+TDataM_varFz = sortrows(TDataM_varFz, "SA");
+
+zeros_vec = zeros(size(TDataM_varFz.SA));
+ones_vec = ones(size(TDataM_varFz.SA));
+
+ALPHA_vec = TDataM_varFz.SA;
+FY_vec = TDataM_varFz.FY;
+FZ_vec = TDataM_varFz.FZ;
+FZ0_vec = tyre_coeffs.FZ0*ones_vec;
+MZ_vec = TDataM_varFz.MZ;
+
+% First guess of MF parameters for Mz0 with variable load --> NOT REALLY
+% IMPORTANT, AS WE'D BE GUESSING MZ0 (w/ Fz = Fz0)
+% MZ0_guess = MF96_MZ0_vec(zeros_vec, ALPHA_vec, zeros_vec, FZ_vec, tyre_coeffs, R0);
+% 
+% % Plot guess data check guess
+% figure('Name','Pure M_z Guess vs raw')
+% plot(ALPHA_vec.*to_deg,MZ_vec,'.','Linewidth',2,'DisplayName','raw (Mz0)')
+% hold on
+% plot(ALPHA_vec.*to_deg,MZ0_guess,'-','Linewidth',2,'DisplayName','Fy0 guess')
+% legend
+% xlabel('$\alpha$ [deg]')
+% ylabel('$M_{z0}$ [N*m]')
+
+% Fit the Mz coefficients for nominal conditions
+% (qBz2 qBz3 qDz2 qDz7 qEz2 qEz3 qEz4 qHz2)
+P0 = [-1.1, 0., -0.01, 0., 0., 0., 0., 0.];
+
+[P_mz_varFz, fval, exitflag] = fmincon(@(P)resid_pure_Mz_varFz(P, MZ_vec, ALPHA_vec, 0, FZ_vec, tyre_coeffs, R0),...
+    P0, [], [], [], [], [], []);
+disp(fval)
+disp(exitflag)
+% Update the coefficients after fitting
+tyre_coeffs.qBz2 = P_mz_varFz(1); 
+tyre_coeffs.qBz3 = P_mz_varFz(2);
+tyre_coeffs.qDz2 = P_mz_varFz(3);
+tyre_coeffs.qDz7 = P_mz_varFz(4);
+tyre_coeffs.qEz2 = P_mz_varFz(5);
+tyre_coeffs.qEz3 = P_mz_varFz(6);
+tyre_coeffs.qEz4 = P_mz_varFz(7);
+tyre_coeffs.qHz2 = P_mz_varFz(8);
+% Recompute MZ0 with fitted coefficients for each load
+MZ0_Fz_220 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, zeros_vec, mean(FZ_220.FZ)*ones_vec, tyre_coeffs, R0);
+MZ0_Fz_440 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, zeros_vec, mean(FZ_440.FZ)*ones_vec, tyre_coeffs, R0);
+MZ0_Fz_700 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, zeros_vec, mean(FZ_700.FZ)*ones_vec, tyre_coeffs, R0);
+MZ0_Fz_900 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, zeros_vec, mean(FZ_900.FZ)*ones_vec, tyre_coeffs, R0);
+MZ0_Fz_1120 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, zeros_vec, mean(FZ_1120.FZ)*ones_vec, tyre_coeffs, R0);
+
+% Plot the results
+figure('Name','Mz0-var Fz')
+plot(ALPHA_vec.*to_deg,TDataM_varFz.MZ,'o','DisplayName','Fy(raw)')
+hold on
+plot(ALPHA_vec.*to_deg,MZ0_Fz_220 ,'-','LineWidth',2,'DisplayName','F_Z = 220N')
+plot(ALPHA_vec.*to_deg,MZ0_Fz_440 ,'-','LineWidth',2,'DisplayName','F_Z = 440N')
+plot(ALPHA_vec.*to_deg,MZ0_Fz_700 ,'-','LineWidth',2,'DisplayName','F_Z = 700N')
+plot(ALPHA_vec.*to_deg,MZ0_Fz_900 ,'-','LineWidth',2,'DisplayName','F_Z = 900N')
+plot(ALPHA_vec.*to_deg,MZ0_Fz_1120,'-','LineWidth',2,'DisplayName','F_Z = 1120N')
+xlabel('$\alpha$ [deg]')
+ylabel('$M_{z0}$ [N]')
+
+
+
 %% Save tyre data structure to mat file
 %
 %save(['tyre_' data_set,'.mat'],'tyre_coeffs');
-
-
-
-

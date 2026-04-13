@@ -58,31 +58,47 @@ ty_data.pVy3            = 0;    % Camber dependency of vert. shift
 ty_data.pVy4            = 0;    % Load/Camber combined vert. shift
 
 % Aligning torque MZ params
-ty_data.qBz1            = 0; % qBz1
-ty_data.qBz10           = 0; % qBz10
-ty_data.qBz2            = 0; % qBz2
-ty_data.qBz3            = 0; % qBz3
-ty_data.qBz4            = 0; % qBz4
-ty_data.qBz5            = 0; % qBz5
-ty_data.qBz9            = 0; % qBz9
-ty_data.qCz1            = 0; % qCz1
-ty_data.qDz1            = 0; % qDz1
-ty_data.qDz2            = 0; % qDz2
-ty_data.qDz3            = 0; % qDz3
-ty_data.qDz4            = 0; % qDz4
-ty_data.qDz6            = 0; % qDz6
-ty_data.qDz7            = 0; % qDz7
-ty_data.qDz8            = 0; % qDz8
-ty_data.qDz9            = 0; % qDz9
-ty_data.qEz1            = 0; % qEz1
-ty_data.qEz2            = 0; % qEz2
-ty_data.qEz3            = 0; % qEz3
-ty_data.qEz4            = 0; % qEz4
-ty_data.qEz5            = 0; % qEz5
-ty_data.qHz1            = 0; % qHz1
-ty_data.qHz2            = 0; % qHz2
-ty_data.qHz3            = 0; % qHz3
-ty_data.qHz4            = 0; % qHz4
+
+% --- Trail slope factors (Bt) ---
+ty_data.qBz1            = 10.0;  % Trail slope factor for peak B at Fznom
+ty_data.qBz2            = -1.0;     % Variation of slope Bt with load
+ty_data.qBz3            = 0;     % Variation of slope Bt with load squared
+ty_data.qBz4            = 0;     % Variation of slope Bt with camber
+ty_data.qBz5            = 0;     % Variation of slope Bt with absolute camber
+
+% --- Residual torque slope factors (Br) ---
+ty_data.qBz9            = 0;     % Slope factor Br of residual torque Mz
+ty_data.qBz10           = 0;     % Slope factor Br of residual torque Mz (cornering stiffness dependence)
+
+% --- Trail shape factor (Ct) ---
+ty_data.qCz1            = 1.2;   % Shape factor Ct for pneumatic trail
+
+% --- Trail peak factors (Dt) ---
+ty_data.qDz1            = 0.12;  % Peak pneumatic trail Dt0 at Fznom
+ty_data.qDz2            = -0.01; % Variation of peak trail Dt with load
+ty_data.qDz3            = 0;     % Variation of peak trail Dt with camber
+ty_data.qDz4            = 0;     % Variation of peak trail Dt with camber squared
+
+% --- Residual torque peak factors (Dr) ---
+ty_data.qDz6            = 0.001; % Peak residual torque Dr at Fznom
+ty_data.qDz7            = 0;     % Variation of peak residual torque Dr with load
+ty_data.qDz8            = 0;     % Variation of peak residual torque Dr with camber
+ty_data.qDz9            = 0;     % Variation of peak residual torque Dr with camber and load
+
+% --- Trail curvature factors (Et) ---
+ty_data.qEz1            = -1.5;  % Curvature factor Et for pneumatic trail
+ty_data.qEz2            = 0;     % Variation of curvature Et with load
+ty_data.qEz3            = 0;     % Variation of curvature Et with load squared
+ty_data.qEz4            = 0;     % Variation of curvature Et with sign of Alpha-t
+ty_data.qEz5            = 0;     % Variation of curvature Et with camber and sign of Alpha-t
+
+% --- Trail horizontal shift factors (SHt) ---
+ty_data.qHz1            = 0;     % Trail horizontal shift SHt at Fznom
+ty_data.qHz2            = 0;     % Variation of horizontal shift SHt with load
+ty_data.qHz3            = 0;     % Variation of horizontal shift SHt with camber
+ty_data.qHz4            = 0;     % Variation of horizontal shift SHt with camber and load
+
+
 % Combined slip FX U FY params
 ty_data.rBx2            = 0; % rBx2
 ty_data.rBy1            = 0; % rBy1
