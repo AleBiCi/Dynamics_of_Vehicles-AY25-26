@@ -465,10 +465,14 @@ legend
 % the ellipse of adherence.
 
 
+%% Re-init tyre coefficients
+tyre_coeffs_Mz = initialise_tyre_data(R0, Fz0);
+
 %% Pure Self-aligning Moment MZ
 % -------------
 %    Pure Mz
 % -------------
+
 % Keep data with nominal vertical load, k=0 and Gamma=0
 [TDataM_varFz, ~] = intersect_table_data( SL_0, GAMMA_0, FZ_700 );
 % Sort rows by SA
@@ -480,11 +484,11 @@ ones_vec = ones(size(TDataM_varFz.SA));
 ALPHA_vec = TDataM_varFz.SA;
 FY_vec = TDataM_varFz.FY;
 FZ_vec = TDataM_varFz.FZ;
-FZ0_vec = tyre_coeffs.FZ0*ones_vec;
+FZ0_vec = tyre_coeffs_Mz.FZ0*ones_vec;
 MZ_vec = TDataM_varFz.MZ;
 
 % First guess of MF parameters for Mz0 with nominal values
-MZ0_guess = MF96_MZ0_vec(zeros_vec, ALPHA_vec, zeros_vec, FZ_vec, tyre_coeffs, R0);
+MZ0_guess = MF96_MZ0_vec(zeros_vec, ALPHA_vec, zeros_vec, FZ_vec, tyre_coeffs_Mz, R0);
 
 % Plot guess data check guess
 figure('Name','Pure M_z Guess vs raw')
@@ -499,21 +503,21 @@ ylabel('$M_{z0}$ [N*m]')
 % (qBz1 qBz9 qBz10 qCz1 qDz1 qDz6 qEz1 qHz1)
 P0 = [10., 0., 0., 1.2, 0.12, 0.001, -1.5, 0.];
 
-[P_mz_varFz, fval, exitflag] = fmincon(@(P)resid_pure_Mz(P, MZ_vec, ALPHA_vec, 0, tyre_coeffs.FZ0, tyre_coeffs, R0),...
+[P_mz_varFz, fval, exitflag] = fmincon(@(P)resid_pure_Mz(P, MZ_vec, ALPHA_vec, 0, tyre_coeffs_Mz.FZ0, tyre_coeffs_Mz, R0),...
     P0, [], [], [], [], [], []);
 disp(fval)
 disp(exitflag)
 % Update the coefficients after fitting
-tyre_coeffs.qBz1 = P_mz_varFz(1); 
-tyre_coeffs.qBz9 = P_mz_varFz(2);
-tyre_coeffs.qBz10= P_mz_varFz(3);
-tyre_coeffs.qCz1 = P_mz_varFz(4);
-tyre_coeffs.qDz1 = P_mz_varFz(5);
-tyre_coeffs.qDz6 = P_mz_varFz(6);
-tyre_coeffs.qEz1 = P_mz_varFz(7);
-tyre_coeffs.qHz1 = P_mz_varFz(8);
+tyre_coeffs_Mz.qBz1 = P_mz_varFz(1); 
+tyre_coeffs_Mz.qBz9 = P_mz_varFz(2);
+tyre_coeffs_Mz.qBz10= P_mz_varFz(3);
+tyre_coeffs_Mz.qCz1 = P_mz_varFz(4);
+tyre_coeffs_Mz.qDz1 = P_mz_varFz(5);
+tyre_coeffs_Mz.qDz6 = P_mz_varFz(6);
+tyre_coeffs_Mz.qEz1 = P_mz_varFz(7);
+tyre_coeffs_Mz.qHz1 = P_mz_varFz(8);
 % Recompute MZ0 with fitted coefficients
-MZ0_nominal = MF96_MZ0_vec(zeros_vec, ALPHA_vec, zeros_vec, FZ0_vec, tyre_coeffs, R0);
+MZ0_nominal = MF96_MZ0_vec(zeros_vec, ALPHA_vec, zeros_vec, FZ0_vec, tyre_coeffs_Mz, R0);
 
 % Plot the results
 figure('Name','Mz0', 'Color', 'w')
@@ -539,12 +543,12 @@ ones_vec = ones(size(TDataM_varFz.SA));
 ALPHA_vec = TDataM_varFz.SA;
 FY_vec = TDataM_varFz.FY;
 FZ_vec = TDataM_varFz.FZ;
-FZ0_vec = tyre_coeffs.FZ0*ones_vec;
+FZ0_vec = tyre_coeffs_Mz.FZ0*ones_vec;
 MZ_vec = TDataM_varFz.MZ;
 
 % First guess of MF parameters for Mz0 with variable load --> NOT REALLY
 % IMPORTANT, AS WE'D BE GUESSING MZ0 (w/ Fz = Fz0)
-% MZ0_guess = MF96_MZ0_vec(zeros_vec, ALPHA_vec, zeros_vec, FZ_vec, tyre_coeffs, R0);
+% MZ0_guess = MF96_MZ0_vec(zeros_vec, ALPHA_vec, zeros_vec, FZ_vec, tyre_coeffs_Mz, R0);
 % 
 % % Plot guess data check guess
 % figure('Name','Pure M_z Guess vs raw')
@@ -559,25 +563,25 @@ MZ_vec = TDataM_varFz.MZ;
 % (qBz2 qBz3 qDz2 qDz7 qEz2 qEz3 qEz4 qHz2)
 P0 = [-1.1, 0., -0.01, 0., 0., 0., 0., 0.];
 
-[P_mz_varFz, fval, exitflag] = fmincon(@(P)resid_pure_Mz_varFz(P, MZ_vec, ALPHA_vec, 0, FZ_vec, tyre_coeffs, R0),...
+[P_mz_varFz, fval, exitflag] = fmincon(@(P)resid_pure_Mz_varFz(P, MZ_vec, ALPHA_vec, 0, FZ_vec, tyre_coeffs_Mz, R0),...
     P0, [], [], [], [], [], []);
 disp(fval)
 disp(exitflag)
 % Update the coefficients after fitting
-tyre_coeffs.qBz2 = P_mz_varFz(1); 
-tyre_coeffs.qBz3 = P_mz_varFz(2);
-tyre_coeffs.qDz2 = P_mz_varFz(3);
-tyre_coeffs.qDz7 = P_mz_varFz(4);
-tyre_coeffs.qEz2 = P_mz_varFz(5);
-tyre_coeffs.qEz3 = P_mz_varFz(6);
-tyre_coeffs.qEz4 = P_mz_varFz(7);
-tyre_coeffs.qHz2 = P_mz_varFz(8);
+tyre_coeffs_Mz.qBz2 = P_mz_varFz(1); 
+tyre_coeffs_Mz.qBz3 = P_mz_varFz(2);
+tyre_coeffs_Mz.qDz2 = P_mz_varFz(3);
+tyre_coeffs_Mz.qDz7 = P_mz_varFz(4);
+tyre_coeffs_Mz.qEz2 = P_mz_varFz(5);
+tyre_coeffs_Mz.qEz3 = P_mz_varFz(6);
+tyre_coeffs_Mz.qEz4 = P_mz_varFz(7);
+tyre_coeffs_Mz.qHz2 = P_mz_varFz(8);
 % Recompute MZ0 with fitted coefficients for each load
-MZ0_Fz_220 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, zeros_vec, mean(FZ_220.FZ)*ones_vec, tyre_coeffs, R0);
-MZ0_Fz_440 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, zeros_vec, mean(FZ_440.FZ)*ones_vec, tyre_coeffs, R0);
-MZ0_Fz_700 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, zeros_vec, mean(FZ_700.FZ)*ones_vec, tyre_coeffs, R0);
-MZ0_Fz_900 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, zeros_vec, mean(FZ_900.FZ)*ones_vec, tyre_coeffs, R0);
-MZ0_Fz_1120 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, zeros_vec, mean(FZ_1120.FZ)*ones_vec, tyre_coeffs, R0);
+MZ0_Fz_220 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, zeros_vec, mean(FZ_220.FZ)*ones_vec, tyre_coeffs_Mz, R0);
+MZ0_Fz_440 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, zeros_vec, mean(FZ_440.FZ)*ones_vec, tyre_coeffs_Mz, R0);
+MZ0_Fz_700 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, zeros_vec, mean(FZ_700.FZ)*ones_vec, tyre_coeffs_Mz, R0);
+MZ0_Fz_900 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, zeros_vec, mean(FZ_900.FZ)*ones_vec, tyre_coeffs_Mz, R0);
+MZ0_Fz_1120 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, zeros_vec, mean(FZ_1120.FZ)*ones_vec, tyre_coeffs_Mz, R0);
 
 % Plot the results
 figure('Name','Mz0-var Fz')
@@ -592,6 +596,76 @@ xlabel('$\alpha$ [deg]')
 ylabel('$M_{z0}$ [N]')
 
 
+%% Mz with variable Load Fz and Camber Gamma
+% data with k=0
+% [TDataM_varGammaFz, ~] = intersect_table_data( SL_0 );
+
+% N.B. The tyre coefficients are now fitted for variable load and zero long slip
+
+% Sort rows by SA
+TDataM_varGammaFz = sortrows(tyre_data, "SA");
+
+zeros_vec = zeros(size(TDataM_varGammaFz.SA));
+ones_vec = ones(size(TDataM_varGammaFz.SA));
+
+ALPHA_vec = TDataM_varGammaFz.SA;
+GAMMA_vec = TDataM_varGammaFz.IA;
+FY_vec = TDataM_varGammaFz.FY;
+FZ_vec = TDataM_varGammaFz.FZ;
+FZ0_vec = tyre_coeffs_Mz.FZ0*ones_vec;
+MZ_vec = TDataM_varGammaFz.MZ;
+
+% Plot guess data check guess
+figure('Name','M_z raw varFz varGamma')
+plot(ALPHA_vec.*to_deg,MZ_vec,'.','Linewidth',2,'DisplayName','raw (Mz0)')
+legend
+xlabel('$\alpha$ [deg]')
+ylabel('$M_{z0}$ [N*m]')
+
+% Fit the parameters (
+% First guess of variable gamma params
+%    (qBz4 qBz5 qDz3 qDz4 qDz8 qEz5 qHz3 qDz9 qHz4) --> Last 2 are COMBINED
+%    varFz and varGamma
+P0 = [0., 0., 0., 0., 0.2, 0.03, 0., 0., 0.];
+
+% Run "unconstrained" minimization
+[P_varGammaFz, fval, exitflag] = fmincon(@(P)resid_pure_Mz_varGammaFz(P, MZ_vec, ALPHA_vec,...
+    GAMMA_vec, FZ_vec, tyre_coeffs, R0), P0, [],[],[],[],[],[]);
+
+% Assign computed best parameters
+tyre_coeffs.qBz4 = P_varGammaFz(1);
+tyre_coeffs.qBz5 = P_varGammaFz(2);
+tyre_coeffs.qDz3 = P_varGammaFz(3);
+tyre_coeffs.qDz4 = P_varGammaFz(4);
+tyre_coeffs.qDz8 = P_varGammaFz(5);
+tyre_coeffs.qEz5 = P_varGammaFz(6);
+tyre_coeffs.qHz3 = P_varGammaFz(7);
+tyre_coeffs.qDz9 = P_varGammaFz(8);
+tyre_coeffs.qHz4 = P_varGammaFz(9);
+
+% Recompute FY0 for each Gamma value and variable load
+MZ0_varGammaFz_vec0 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_0.IA)*ones_vec, FZ_vec, tyre_coeffs_Mz, R0);
+MZ0_varGammaFz_vec1 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_1.IA)*ones_vec, FZ_vec, tyre_coeffs_Mz, R0);
+MZ0_varGammaFz_vec2 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_2.IA)*ones_vec, FZ_vec, tyre_coeffs_Mz, R0);
+MZ0_varGammaFz_vec3 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_3.IA)*ones_vec, FZ_vec, tyre_coeffs_Mz, R0);
+MZ0_varGammaFz_vec4 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_4.IA)*ones_vec, FZ_vec, tyre_coeffs_Mz, R0);
+MZ0_varGammaFz_vec5 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_5.IA)*ones_vec, FZ_vec, tyre_coeffs_Mz, R0);
+%%
+% Plot results
+figure('Name','Mz0 vs Gamma')
+plot(ALPHA_vec.*to_deg,MZ_vec,'o','Linewidth',2,'DisplayName','Mz raw')
+hold on
+plot(ALPHA_vec.*to_deg,MZ0_varGammaFz_vec0,'-','Linewidth',2,'DisplayName','IA = 0°')
+plot(ALPHA_vec.*to_deg,MZ0_varGammaFz_vec1,'-','Linewidth',2,'DisplayName','IA = 1°')
+plot(ALPHA_vec.*to_deg,MZ0_varGammaFz_vec2,'-','Linewidth',2,'DisplayName','IA = 2°')
+plot(ALPHA_vec.*to_deg,MZ0_varGammaFz_vec3,'-','Linewidth',2,'DisplayName','IA = 3°')
+plot(ALPHA_vec.*to_deg,MZ0_varGammaFz_vec4,'-','Linewidth',2,'DisplayName','IA = 4°')
+plot(ALPHA_vec.*to_deg,MZ0_varGammaFz_vec5,'-','Linewidth',2,'DisplayName','IA = 5°')
+xlabel('$\alpha$ [deg]')
+ylabel('$M_{z0}$ [N*m]')
+legend
+
+% COMMIT THE resid_pure_Mz_varFz FILE FOR F***K'S SAKE
 
 %% Save tyre data structure to mat file
 %
