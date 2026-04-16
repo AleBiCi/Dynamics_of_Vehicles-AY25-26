@@ -1,5 +1,5 @@
-% Combined longitudinal and lateral forces
-function [fx, fy] = MF96_FX_FY(kappa, alpha, gamma__w, Fz, tyre_data)
+% Combined longitudinal and lateral forces --> vector form
+function [fx, fy, Gxa, Gyk] = MF96_FX_FY(kappa, alpha, gamma__w, Fz, tyre_data)
 
  % precode
 
