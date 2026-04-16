@@ -545,3 +545,6 @@ fprintf('Kx      = %6.3f\n',Bx*Cx*Dx/tyre_coeffs.FZ0);
 
 %% Save tyre data structure to mat file
 save(['tyre_' data_set,'.mat'],'tyre_coeffs');
+
+%% Save longitudinal dataset data points to .mat file
+save([data_set, '.mat'], "tyre_data");

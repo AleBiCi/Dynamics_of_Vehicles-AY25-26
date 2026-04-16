@@ -204,6 +204,8 @@ ylabel('[-]')
 
 % comments
 
+%% Save cleaned lateral dataset in .mat file
+save([data_set, '.mat'], "tyre_data");
 %% FITTING
 % initialise tyre data
 tyre_coeffs = initialise_tyre_data(R0, Fz0);
@@ -543,7 +545,7 @@ MZ_vec = TDataM_varFz.MZ;
 
 % First guess of MF parameters for Mz0 with variable load --> NOT REALLY
 % IMPORTANT, AS WE'D BE GUESSING MZ0 (w/ Fz = Fz0)
-% MZ0_guess = MF96_MZ0_vec(zeros_vec, ALPHA_vec, zeros_vec, FZ_vec, tyre_coeffs_Mz, R0);
+% MZ0_guess = MF96_MZ0_vec(zeros_vec, ALPHA_vec, zeros_vec, FZ_vec, tyre_coeffs, R0);
 % 
 % % Plot guess data check guess
 % figure('Name','Pure M_z Guess vs raw')
@@ -668,31 +670,31 @@ ALPHA_vec = TDataM_varGammaFz.SA;
 GAMMA_vec = TDataM_varGammaFz.IA;
 FY_vec = TDataM_varGammaFz.FY;
 FZ_vec = TDataM_varGammaFz.FZ;
-FZ0_vec = tyre_coeffs_Mz.FZ0*ones_vec;
+FZ0_vec = tyre_coeffs.FZ0*ones_vec;
 MZ_vec = TDataM_varGammaFz.MZ;
 
 % Fit (qHz4 qDz9)
 P0 = [0.1, 0.2];
 
-[P_varGammaFz, fval, exitflag] = fmincon(@(P)resid_pure_Mz_varGammaFz(P, MZ_vec, ALPHA_vec, GAMMA_vec, FZ_vec, tyre_coeffs_Mz, R0),...
+[P_varGammaFz, fval, exitflag] = fmincon(@(P)resid_pure_Mz_varGammaFz(P, MZ_vec, ALPHA_vec, GAMMA_vec, FZ_vec, tyre_coeffs, R0),...
     P0, [],[],[],[],[],[]);
 
-tyre_coeffs_Mz.qHz4 = P_varGammaFz(1);
-tyre_coeffs_Mz.qDz9 = P_varGammaFz(2);
+tyre_coeffs.qHz4 = P_varGammaFz(1);
+tyre_coeffs.qDz9 = P_varGammaFz(2);
 
 
-MZ0_varGammaFz_vec0 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_0.IA)*ones_vec, FZ0_vec, tyre_coeffs_Mz, R0);
-MZ0_varGammaFz_vec1 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_1.IA)*ones_vec, FZ0_vec, tyre_coeffs_Mz, R0);
-MZ0_varGammaFz_vec2 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_2.IA)*ones_vec, FZ0_vec, tyre_coeffs_Mz, R0);
-MZ0_varGammaFz_vec3 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_3.IA)*ones_vec, FZ0_vec, tyre_coeffs_Mz, R0);
-MZ0_varGammaFz_vec4 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_4.IA)*ones_vec, FZ0_vec, tyre_coeffs_Mz, R0);
-MZ0_varGammaFz_vec5 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_5.IA)*ones_vec, FZ0_vec, tyre_coeffs_Mz, R0);
+MZ0_varGammaFz_vec0 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_0.IA)*ones_vec, FZ0_vec, tyre_coeffs, R0);
+MZ0_varGammaFz_vec1 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_1.IA)*ones_vec, FZ0_vec, tyre_coeffs, R0);
+MZ0_varGammaFz_vec2 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_2.IA)*ones_vec, FZ0_vec, tyre_coeffs, R0);
+MZ0_varGammaFz_vec3 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_3.IA)*ones_vec, FZ0_vec, tyre_coeffs, R0);
+MZ0_varGammaFz_vec4 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_4.IA)*ones_vec, FZ0_vec, tyre_coeffs, R0);
+MZ0_varGammaFz_vec5 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_5.IA)*ones_vec, FZ0_vec, tyre_coeffs, R0);
 
-MZ0_varGammaFz_vec6 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_0.IA)*ones_vec, mean(FZ_220.FZ)*ones_vec, tyre_coeffs_Mz, R0);
-MZ0_varGammaFz_vec7 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_0.IA)*ones_vec, mean(FZ_440.FZ)*ones_vec, tyre_coeffs_Mz, R0);
-MZ0_varGammaFz_vec8 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_0.IA)*ones_vec, mean(FZ_700.FZ)*ones_vec, tyre_coeffs_Mz, R0);
-MZ0_varGammaFz_vec9 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_0.IA)*ones_vec, mean(FZ_900.FZ)*ones_vec, tyre_coeffs_Mz, R0);
-MZ0_varGammaFz_vec10= MF96_MZ0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_0.IA)*ones_vec, mean(FZ_1120.FZ)*ones_vec, tyre_coeffs_Mz, R0);
+MZ0_varGammaFz_vec6 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_0.IA)*ones_vec, mean(FZ_220.FZ)*ones_vec, tyre_coeffs, R0);
+MZ0_varGammaFz_vec7 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_0.IA)*ones_vec, mean(FZ_440.FZ)*ones_vec, tyre_coeffs, R0);
+MZ0_varGammaFz_vec8 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_0.IA)*ones_vec, mean(FZ_700.FZ)*ones_vec, tyre_coeffs, R0);
+MZ0_varGammaFz_vec9 = MF96_MZ0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_0.IA)*ones_vec, mean(FZ_900.FZ)*ones_vec, tyre_coeffs, R0);
+MZ0_varGammaFz_vec10= MF96_MZ0_vec(zeros_vec, ALPHA_vec, mean(GAMMA_0.IA)*ones_vec, mean(FZ_1120.FZ)*ones_vec, tyre_coeffs, R0);
 
 % Filter for your load level
 idx_fz = abs(FZ_vec - 700) < 50;
@@ -721,14 +723,260 @@ plot(ALPHA_vec.*to_deg,MZ0_varGammaFz_vec9 ,'-','LineWidth',2,'DisplayName','F_Z
 plot(ALPHA_vec.*to_deg,MZ0_varGammaFz_vec10,'-','LineWidth',2,'DisplayName','F_Z = 1120N, IA = 0\degree')
 legend
 
+%% Save params that have been fitted for pure Fy
+tyre_coeffs_Fy = tyre_coeffs; % preventive measure to avoid overwriting tyre_coeffs
 
 %% Combined FX FY using normalised theoretical slip
 % Using Combined FX and FY with normalised theoretical slip plot and comments
 % the ellipse of adherence.
 
+load("tyre_longitudinal_dataset.mat", "tyre_coeffs"); % Now load the fitted Fx params on tyre_coeffs
+% Merge the fitted params into one struct (tyre_coeffs_comb) s.t. it can be easily passed to
+% the helper functions to compute combined effects
+% x coeffs
+tyre_coeffs_comb = tyre_coeffs;
+% Add rBx1
+tyre_coeffs_comb.rBx1 = 0.;
+% y coeffs
+tyre_coeffs_comb.pCy1 = tyre_coeffs_Fy.pCy1;
+tyre_coeffs_comb.pDy1 = tyre_coeffs_Fy.pDy1;
+tyre_coeffs_comb.pDy2 = tyre_coeffs_Fy.pDy2;
+tyre_coeffs_comb.pDy3 = tyre_coeffs_Fy.pDy3;
+tyre_coeffs_comb.pEy1 = tyre_coeffs_Fy.pEy1;
+tyre_coeffs_comb.pEy2 = tyre_coeffs_Fy.pEy2;
+tyre_coeffs_comb.pEy3 = tyre_coeffs_Fy.pEy3;
+tyre_coeffs_comb.pEy4 = tyre_coeffs_Fy.pEy4;
+tyre_coeffs_comb.pKy1 = tyre_coeffs_Fy.pKy1;
+tyre_coeffs_comb.pKy2 = tyre_coeffs_Fy.pKy2;
+tyre_coeffs_comb.pKy3 = tyre_coeffs_Fy.pKy3;
+tyre_coeffs_comb.pHy1 = tyre_coeffs_Fy.pHy1;
+tyre_coeffs_comb.pHy2 = tyre_coeffs_Fy.pHy2;
+tyre_coeffs_comb.pHy3 = tyre_coeffs_Fy.pHy3;
+tyre_coeffs_comb.pVy1 = tyre_coeffs_Fy.pVy1;
+tyre_coeffs_comb.pVy2 = tyre_coeffs_Fy.pVy2;
+tyre_coeffs_comb.pVy3 = tyre_coeffs_Fy.pVy3;
+tyre_coeffs_comb.pVy4 = tyre_coeffs_Fy.pVy4;
+% Do we need Mz coeffs on tyre_coeffs? probably not
+%% Save fitted tyre coefficients to .mat file
+save("Fx_Fy_coeffs_fitted.mat", "tyre_coeffs_comb");
 
+%% Reload longitudinal dataset and identify sections in the data
+load("longitudinal_dataset.mat", "tyre_data");
+tyre_data_long = tyre_data;
+whos("tyre_data_long");
 
+% Extract points at constant inclination angle
+GAMMA_tol = 0.05*to_rad;
+idx.GAMMA_0 = 0.0*to_rad-GAMMA_tol < tyre_data_long.IA & tyre_data_long.IA < 0.0*to_rad+GAMMA_tol;
+idx.GAMMA_1 = 1.0*to_rad-GAMMA_tol < tyre_data_long.IA & tyre_data_long.IA < 1.0*to_rad+GAMMA_tol;
+idx.GAMMA_2 = 2.0*to_rad-GAMMA_tol < tyre_data_long.IA & tyre_data_long.IA < 2.0*to_rad+GAMMA_tol;
+idx.GAMMA_3 = 3.0*to_rad-GAMMA_tol < tyre_data_long.IA & tyre_data_long.IA < 3.0*to_rad+GAMMA_tol;
+idx.GAMMA_4 = 4.0*to_rad-GAMMA_tol < tyre_data_long.IA & tyre_data_long.IA < 4.0*to_rad+GAMMA_tol;
+idx.GAMMA_5 = 5.0*to_rad-GAMMA_tol < tyre_data_long.IA & tyre_data_long.IA < 5.0*to_rad+GAMMA_tol;
+GAMMA_0  = tyre_data_long( idx.GAMMA_0, : );
+GAMMA_1  = tyre_data_long( idx.GAMMA_1, : );
+GAMMA_2  = tyre_data_long( idx.GAMMA_2, : );
+GAMMA_3  = tyre_data_long( idx.GAMMA_3, : );
+GAMMA_4  = tyre_data_long( idx.GAMMA_4, : );
+GAMMA_5  = tyre_data_long( idx.GAMMA_5, : );
 
-%% Save tyre data structure to mat file
-%
-%save(['tyre_' data_set,'.mat'],'tyre_coeffs');
+% Extract points at constant vertical load
+% Test data done at:
+%  - 50lbf  ( 50*0.453592*9.81 =  223N )
+%  - 150lbf (150*0.453592*9.81 =  667N )
+%  - 200lbf (200*0.453592*9.81 =  890N )
+%  - 250lbf (250*0.453592*9.81 = 1120N )
+
+FZ_tol = 100;
+idx.FZ_220  = 220-FZ_tol < tyre_data_long.FZ & tyre_data_long.FZ < 220+FZ_tol;
+idx.FZ_440  = 440-FZ_tol < tyre_data_long.FZ & tyre_data_long.FZ < 440+FZ_tol;
+idx.FZ_700  = 700-FZ_tol < tyre_data_long.FZ & tyre_data_long.FZ < 700+FZ_tol;
+idx.FZ_900  = 900-FZ_tol < tyre_data_long.FZ & tyre_data_long.FZ < 900+FZ_tol;
+idx.FZ_1120 = 1120-FZ_tol < tyre_data_long.FZ & tyre_data_long.FZ < 1120+FZ_tol;
+FZ_220  = tyre_data_long( idx.FZ_220, : );
+FZ_440  = tyre_data_long( idx.FZ_440, : );
+FZ_700  = tyre_data_long( idx.FZ_700, : );
+FZ_900  = tyre_data_long( idx.FZ_900, : );
+FZ_1120 = tyre_data_long( idx.FZ_1120, : );
+
+% The slip angle is varied step wise for longitudinal slip tests
+% 0° , - 3° , -6 °
+SA_tol = 0.5*to_rad;
+idx.SA_0    =  0-SA_tol          < tyre_data_long.SA & tyre_data_long.SA < 0+SA_tol;
+idx.SA_3neg = -(3*to_rad+SA_tol) < tyre_data_long.SA & tyre_data_long.SA < -3*to_rad+SA_tol;
+idx.SA_6neg = -(6*to_rad+SA_tol) < tyre_data_long.SA & tyre_data_long.SA < -6*to_rad+SA_tol;
+SA_0     = tyre_data_long( idx.SA_0, : );
+SA_3neg  = tyre_data_long( idx.SA_3neg, : );
+SA_6neg  = tyre_data_long( idx.SA_6neg, : );
+
+%% Combined effects under nominal vertical load, no camber
+
+% TDataComb = sortrows(tyre_data_long, "SL");
+TDataComb = intersect_table_data( FZ_700, GAMMA_0 );
+
+zeros_vec = zeros(size(TDataComb.SL));
+ones_vec = ones(size(TDataComb.SL));
+FX_vec = TDataComb.FX;
+FY_vec = TDataComb.FY;
+KAPPA_vec = TDataComb.SL;
+ALPHA_vec = TDataComb.SA;
+FZ_vec = TDataComb.FZ;
+FZ0_vec = tyre_coeffs_comb.FZ0*ones_vec;
+GAMMA_vec = TDataComb.IA;
+
+% --- Plot the combined effect with magic formula
+
+% Initialize the interaction coefficients (r)
+% Longitudinal Interaction (Reduction of Fx​ due to alpha)
+tyre_coeffs_comb.rBx1 = 13.0; 
+tyre_coeffs_comb.rBx2 = -11.0;
+tyre_coeffs_comb.rCx1 = 1.05;
+tyre_coeffs_comb.rHx1 = 0.0;
+% Lateral Interaction (Reduction of Fy​ due to kappa)
+tyre_coeffs_comb.rBy1 = 15.0;
+tyre_coeffs_comb.rBy2 = 10.0;
+tyre_coeffs_comb.rBy3 = 0.0;
+tyre_coeffs_comb.rCy1 = 1.0;
+tyre_coeffs_comb.rHy1 = 0.0;
+
+[fx_c, fy_c, Gxa, Gyk] = MF96_FX_FY_vec(KAPPA_vec, ALPHA_vec, zeros_vec, FZ0_vec, tyre_coeffs_comb);
+% Tile 1: Fx vs Kappa
+nexttile;
+hold on; grid on;
+plot(KAPPA_vec, FX_vec, 'b.', 'MarkerSize', 8, 'DisplayName', '$F_x$ (raw)');
+plot(KAPPA_vec, fx_c, 'r.', 'MarkerSize', 4, 'DisplayName', '$F_x$ (guess)');
+xlabel('$\kappa$ [-]')
+ylabel('$F_{x}$ [N]')
+title('Longitudinal Force vs Slip')
+legend('Location', 'best')
+
+% Tile 2: Fx vs Alpha
+nexttile;
+hold on; grid on;
+plot(ALPHA_vec.*to_deg, FX_vec, 'b.', 'MarkerSize', 8, 'DisplayName', '$F_x$ vs $\alpha$ (raw)');
+plot(ALPHA_vec.*to_deg, fx_c, 'r.', 'MarkerSize', 4, 'DisplayName', '$F_x$ vs $\alpha$ (guess)');
+xlabel('$\alpha$ [deg]')
+ylabel('$F_{x}$ [N]')
+title('Longitudinal Force vs Side Slip')
+legend('Location', 'best')
+
+% Tile 3: Fy vs Kappa
+nexttile;
+hold on; grid on;
+plot(KAPPA_vec, FY_vec, 'b.', 'MarkerSize', 8, 'DisplayName', '$F_y$ vs $\kappa$ (raw)');
+plot(KAPPA_vec, fy_c, 'r.', 'MarkerSize', 4, 'DisplayName', '$F_y$ vs $\kappa$ (guess)');
+xlabel('$\kappa$ [-]')
+ylabel('$F_{y}$ [N]')
+title('Lateral Force vs Longitudinal Slip')
+legend('Location', 'best')
+
+% Tile 4: Fy vs Alpha
+nexttile;
+hold on; grid on;
+plot(ALPHA_vec.*to_deg, FY_vec, 'b.', 'MarkerSize', 8, 'DisplayName', '$F_y$ (raw)');
+plot(ALPHA_vec.*to_deg, fy_c, 'r.', 'MarkerSize', 4, 'DisplayName', '$F_y$ (guess)');
+xlabel('$\alpha$ [deg]')
+ylabel('$F_{y}$ [N]')
+title('Lateral Force vs Side Slip')
+legend('Location', 'best')
+
+% ---------------
+
+figure('Name', 'Ellipse of Adherence', 'Color', 'w');
+hold on; grid on;
+% Plot raw data points
+plot(FX_vec, FY_vec, '.', 'Color', [0.7 0.7 0.7], 'DisplayName', 'Raw Data (Combined)');
+% Plot your MF96 prediction
+% We use 'line' instead of 'scatter' if the data is ordered, 
+% but for combined datasets, dots are often safer.
+plot(fx_c, fy_c, 'r-', 'MarkerSize', 4, 'LineWidth', 1, 'DisplayName', 'MF96 Prediction');
+xlabel('$F_x$ [N]'); ylabel('$F_y$ [N]');
+title('Ellipse of Adherence (Friction Ellipse)');
+legend('Location', 'best');
+axis equal; % This is the most important line!
+
+% ---------------
+
+figure('Name', 'MF96 Weighting Functions', 'Color', 'w');
+tiledlayout(1,2);
+% Plot Gxa vs Alpha (shows how side slip kills longitudinal grip)
+nexttile;
+plot(ALPHA_vec.*to_deg, Gxa, 'b.', 'MarkerSize', 10);
+xlabel('$\alpha$ [deg]'); ylabel('$G_{xa}$ [-]');
+title('Longitudinal Weighting Function $G_{xa}$');
+grid on; ylim([0 1.1]);
+% Plot Gyk vs Kappa (shows how longitudinal slip kills lateral grip)
+nexttile;
+plot(KAPPA_vec, Gyk, 'r.', 'MarkerSize', 10);
+xlabel('$\kappa$ [-]'); ylabel('$G_{yk}$ [-]');
+title('Lateral Weighting Function $G_{yk}$');
+grid on; ylim([0 1.1]);
+
+%% 3D Plots
+
+figure('Name', '3D Tire Force Surfaces - Raw Data', 'Color', 'w');
+% Plot Fx Surface
+subplot(1,2,1);
+scatter3(KAPPA_vec, ALPHA_vec.*to_deg, FX_vec, 15, FX_vec, 'filled');
+xlabel('\kappa [-]'); ylabel('\alpha [deg]'); zlabel('F_x [N]');
+title('Raw Longitudinal Force Surface');
+colorbar; view(45, 30);
+
+% Plot Fy Surface
+subplot(1,2,2);
+scatter3(KAPPA_vec, ALPHA_vec.*to_deg, FY_vec, 15, FY_vec, 'filled');
+xlabel('\kappa [-]'); ylabel('\alpha [deg]'); zlabel('F_y [N]');
+title('Raw Lateral Force Surface');
+colorbar; view(45, 30);
+
+%---------------
+
+% 1. Create a regular grid for the surface
+k_range = linspace(min(KAPPA_vec), max(KAPPA_vec), 50);
+a_range = linspace(min(ALPHA_vec), max(ALPHA_vec), 50);
+[K_GRID, A_GRID] = meshgrid(k_range, a_range);
+
+% 2. Define constant conditions for the surface (e.g., nominal load, zero camber)
+fz_const = 700 * ones(size(K_GRID));
+gamma_const = 0 * ones(size(K_GRID));
+
+% 3. Compute the forces for the whole grid
+% Note: You might need to flatten the grids to vectors if your function expects vectors
+[fx_surf, fy_surf] = MF96_FX_FY_vec(K_GRID(:), A_GRID(:), gamma_const(:), fz_const(:), tyre_coeffs_comb);
+
+% Reshape back to grid dimensions
+FX_SURF = reshape(fx_surf, size(K_GRID));
+FY_SURF = reshape(fy_surf, size(K_GRID));
+
+% 4. Plotting
+figure('Name', 'MF96 Combined Force Surfaces', 'Color', 'w');
+
+% Fx Surface
+subplot(1,2,1);
+surf(K_GRID, A_GRID.*to_deg, FX_SURF, 'EdgeColor', 'none', 'FaceAlpha', 0.8);
+hold on;
+plot3(KAPPA_vec, ALPHA_vec.*to_deg, FX_vec, 'r.', 'MarkerSize', 5); % Add raw data points for comparison
+% --- ENHANCEMENT STUFF ---
+colormap(jet); brighten(0.4); % High saturation
+material shiny;               % Bright highlights
+camlight headlight;           % Stronger illumination
+lighting phong;               % Smooth interpolation of light
+% -------------------------
+xlabel('\kappa [-]'); ylabel('\alpha [deg]'); zlabel('F_x [N]');
+title('Combined F_x Surface');
+camlight; lighting phong;
+
+% Fy Surface
+subplot(1,2,2);
+surf(K_GRID, A_GRID.*to_deg, FY_SURF, 'EdgeColor', 'none', 'FaceAlpha', 0.8);
+hold on;
+plot3(KAPPA_vec, ALPHA_vec.*to_deg, FY_vec, 'r.', 'MarkerSize', 5);
+% --- ENHANCEMENT STUFF ---
+colormap(jet); brighten(0.4); % High saturation
+material shiny;               % Bright highlights
+camlight headlight;           % Stronger illumination
+lighting phong;               % Smooth interpolation of light
+% -------------------------
+xlabel('\kappa [-]'); ylabel('\alpha [deg]'); zlabel('F_y [N]');
+title('Combined F_y Surface');
+camlight; lighting phong;
