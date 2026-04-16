@@ -311,11 +311,12 @@ tyre_coeffs.pVx1 = P_fz_nom(7);
 FX0_fz_nom_vec = MF96_FX0_vec(KAPPA_vec,zeros_vec , zeros_vec, ...
   FZ0_vec,tyre_coeffs);
 
-figure('Name','Fx0(Fz0)')
+figure('Name','Fx0(Fz0)', 'Color', 'w')
 plot(KAPPA_vec,TData0.FX,'o','DisplayName','Fx(raw)')
 hold on
 %plot(TDataSub.KAPPA,FX0_fz_nom_vec,'-')
 plot(KAPPA_vec,FX0_fz_nom_vec,'-','LineWidth',2,'DisplayName','Fx-fit')
+title("Pure longitudinal force $F_{x0}$ fitting");
 xlabel('$\kappa$ [-]')
 ylabel('$F_{x0}$ [N]')
 legend
@@ -529,8 +530,14 @@ res_Fx0_varGamma  = resid_pure_Fx_varGamma(P_varGamma,FX_vec, KAPPA_vec,GAMMA_ve
 %% R-squared is
 % 1-SSE/SST
 % SSE/SST = res_Fx0_nom
+FX0_varGamma_pred = MF96_FX0_vec(KAPPA_vec, zeros_vec, GAMMA_vec, FZ_vec, tyre_coeffs);
 
 % SSE is the sum of squared error,  SST is the sum of squared total
+SSE_Fx0_varGamma = sum((FX_vec - FX0_varGamma_pred).^2);
+RMSE_Fx0_varGamma = sqrt(SSE_Fx0_varGamma / length(FX_vec));
+
+fprintf('--- Fx0 Nominal Load Fit ---\n');
+fprintf('RMSE: %6.3f N\n', RMSE_Fx0_varGamma);
 fprintf('R-squared = %6.3f\n',1-res_Fx0_varGamma);
 
 [kappa__x, Bx, Cx, Dx, Ex, SVx] = MF96_FX0_coeffs(0, 0, GAMMA_vec(3), tyre_coeffs.FZ0, tyre_coeffs);

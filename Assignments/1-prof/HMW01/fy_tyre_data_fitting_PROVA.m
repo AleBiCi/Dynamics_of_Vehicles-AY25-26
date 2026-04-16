@@ -203,6 +203,8 @@ xlabel('Samples [-]')
 ylabel('[-]')
 
 % comments
+disp(min(tyre_data.SA)*to_deg)
+disp(max(tyre_data.SA)*to_deg)
 
 %% Save cleaned lateral dataset in .mat file
 save([data_set, '.mat'], "tyre_data");
@@ -980,3 +982,185 @@ lighting phong;               % Smooth interpolation of light
 xlabel('\kappa [-]'); ylabel('\alpha [deg]'); zlabel('F_y [N]');
 title('Combined F_y Surface');
 camlight; lighting phong;
+
+
+%% Using modulus slip to compute Fx and Fy with combined effects
+% Define THEORETICAL SLIP Sx and Sy
+% Sx = SL/(1+SL)
+% Sy = SA/(1+SL)
+SL_vec = TDataComb.SL;
+SA_vec = TDataComb.SA;
+den = 1+SL_vec;
+Sx = SL_vec./den;
+Sy = SA_vec./den;
+
+% Define modulus slip
+Smod = sqrt(Sx.*Sx + Sy.*Sy);
+Sx_norm = Sx./Smod;
+Sy_norm = Sy./Smod;
+
+% Compute pure forces with (Smod, Fx, Gamma)
+FX0_modslip = MF96_FX0_vec(Smod, Smod, GAMMA_vec, FZ0_vec, tyre_coeffs_comb);
+FY0_modslip = MF96_FY0_vec(Smod, Smod, GAMMA_vec, FZ0_vec, tyre_coeffs_comb);
+% Normalize by Sx (or Sy) / modulus slip
+FX0_modslip = FX0_modslip .* Sx_norm;
+FY0_modslip = FY0_modslip .* Sy_norm;
+
+% Plot 
+figure('Name', 'Ellipse of Adherence (Colored by Modulus Slip)', 'Color', 'w');
+hold on; grid on;
+
+% 1. Plot raw experimental data in the background (light gray)
+plot(FX_vec, FY_vec, '.', 'Color', [0.8 0.8 0.8], 'DisplayName', 'Raw Data (Combined)');
+
+% 2. Plot Modulus Slip points colored by their Smod value
+% scatter(X, Y, Size, ColorVariable, 'filled')
+s = scatter(FX0_modslip, FY0_modslip, 15, Smod, 'filled', 'DisplayName', 'Modulus Slip Model');
+
+% 3. Add a colorbar to explain the slip values
+c = colorbar;
+ylabel(c, 'Modulus Slip $S_{mod}$ [-]', 'Interpreter', 'latex');
+colormap(jet); % High slip will be red, low slip will be blue
+
+% 4. Formatting
+xlabel('$F_x$ [N]', 'Interpreter', 'latex'); 
+ylabel('$F_y$ [N]', 'Interpreter', 'latex');
+title('Ellipse of Adherence: Force Projection by $S_{mod}$', 'Interpreter', 'latex');
+legend('Location', 'best');
+axis equal; % Essential for seeing the physical "ellipse" shape correctly
+
+% -------------
+
+figure("Name","Combined slip forces")
+
+% Tile 1: Fx_modslip vs Sx
+nexttile;
+hold on; grid on;
+plot(Sx, FX_vec, 'b.', 'MarkerSize', 8, 'DisplayName', '$F_x$ (raw)');
+plot(Sx, FX0_modslip, 'r.', 'MarkerSize', 4, 'DisplayName', '$F_x$ (Modslip)');
+xlabel('$S_x$ [-]')
+ylabel('$F_{x}$ [N]')
+title('Longitudinal Force vs Slip')
+legend('Location', 'best')
+
+% Tile 2: Fx_modslip vs Sy
+nexttile;
+hold on; grid on;
+plot(Sy, FX_vec, 'b.', 'MarkerSize', 8, 'DisplayName', '$F_x$ vs $S_y$ (raw)');
+plot(Sy, FX0_modslip, 'r.', 'MarkerSize', 4, 'DisplayName', '$F_x$ vs $S_y$ (Modslip)');
+xlabel('$S_y$ [-]')
+ylabel('$F_{x}$ [N]')%% 3D Plots with normalised slip
+title('Longitudinal Force vs Side Slip')
+legend('Location', 'best')
+
+% Tile 3: Fy_modslip vs Sx
+nexttile;
+hold on; grid on;
+plot(Sx, FY_vec, 'b.', 'MarkerSize', 8, 'DisplayName', '$F_y$ vs $S_x$ (raw)');
+plot(Sx, FY0_modslip, 'r.', 'MarkerSize', 4, 'DisplayName', '$F_y$ vs $S_x$ (Modslip)');
+xlabel('$S_x$ [-]')
+ylabel('$F_{y}$ [N]')
+title('Lateral Force vs Longitudinal Slip')
+legend('Location', 'best')
+
+% Tile 4: Fy_modslip vs Sy
+nexttile;
+hold on; grid on;
+plot(Sy, FY_vec, 'b.', 'MarkerSize', 8, 'DisplayName', '$F_y$ (raw)');
+plot(Sy, FY0_modslip, 'r.', 'MarkerSize', 4, 'DisplayName', '$F_y$ (Modslip)');
+xlabel('$S_y$ [-]')
+ylabel('$F_{y}$ [N]')
+title('Lateral Force vs Side Slip')
+legend('Location', 'best')
+
+%% 3D Plots with normalised slip
+% 1. Create a regular grid for the surface (Sx and Sy)
+k_range = linspace(min(Sx), max(Sx), 50);
+a_range = linspace(min(Sy), max(Sy), 50);
+[K_GRID, A_GRID] = meshgrid(k_range, a_range);
+
+% 2. Calculate Modulus Slip for the entire grid
+SMOD_GRID = sqrt(K_GRID.^2 + A_GRID.^2);
+
+% Handle the singularity at the origin (0,0) to avoid division by zero
+SMOD_GRID_SAFE = SMOD_GRID;
+SMOD_GRID_SAFE(SMOD_GRID == 0) = eps; 
+
+% 3. Compute the pure forces using the Modulus Slip as the input slip
+% We use the nominal load and zero camber for the reference surface
+fz_const = 700 * ones(size(K_GRID)); 
+gamma_const = 0 * ones(size(K_GRID));
+
+% Compute pure forces based on the resultant slip magnitude Smod
+FX0_grid = MF96_FX0_vec(SMOD_GRID(:), SMOD_GRID(:), gamma_const(:), fz_const(:), tyre_coeffs_comb);
+FY0_grid = MF96_FY0_vec(SMOD_GRID(:), SMOD_GRID(:), gamma_const(:), fz_const(:), tyre_coeffs_comb);
+
+% 4. Reshape and Normalize/Project the forces
+% Fx = Fx0(Smod) * (Sx / Smod)
+% Fy = Fy0(Smod) * (Sy / Smod)
+FX_MODSLIP_SURF = reshape(FX0_grid, size(K_GRID)) .* (K_GRID ./ SMOD_GRID_SAFE);
+FY_MODSLIP_SURF = reshape(FY0_grid, size(K_GRID)) .* (A_GRID ./ SMOD_GRID_SAFE);
+
+% Create the figure for the 3D comparison
+figure('Name', 'Modulus Slip vs Experimental Data', 'Color', 'w');
+
+% --- Fx Surface and Data ---
+subplot(1,2,1);
+% Plot the theoretical surface (Modulus Slip method)
+s1 = surf(K_GRID, A_GRID, FX_MODSLIP_SURF, 'EdgeColor', 'none', 'FaceAlpha', 0.8); 
+hold on;
+
+% Plot the RAW EXPERIMENTAL DATA (gray points)
+plot3(Sx, Sy, FX_vec, '.', 'Color', [0.5 0.5 0.5], 'MarkerSize', 5, 'DisplayName', 'Experimental Data');
+
+% Plot the MODEL POINTS (red points computed at specific slip values)
+plot3(Sx, Sy, FX0_modslip, 'r.', 'MarkerSize', 6, 'DisplayName', 'Modulus Slip Model');
+
+% Formatting
+% EXPLICIT LIGHT SOURCE
+hL1 = camlight('headlight'); % Create light object
+hL1.Style = 'infinite';      % Parallel rays (brighter overall)
+lighting gouraud;
+s1.AmbientStrength = 0.7;
+s1.DiffuseStrength = 0.8;
+s1.SpecularStrength = 0.2;
+s1.FaceLighting = 'gouraud';
+colormap(jet); brighten(0.6); material shiny; camlight headlight; lighting phong;
+
+xlabel('$S_x$ [-]', 'Interpreter', 'latex'); 
+ylabel('$S_y$ [-]', 'Interpreter', 'latex'); 
+zlabel('$F_x$ [N]', 'Interpreter', 'latex');
+title('Longitudinal Force: Surface vs. Raw Data', 'Interpreter', 'latex');
+legend('Model Surface', 'Experimental Data', 'Model Points', 'Location', 'northeast');
+view(45, 30);
+grid on;
+
+% --- Fy Surface and Data ---
+subplot(1,2,2);
+% Plot the theoretical surface
+s2 = surf(K_GRID, A_GRID, FY_MODSLIP_SURF, 'EdgeColor', 'none', 'FaceAlpha', 0.8);
+hold on;
+
+% Plot the RAW EXPERIMENTAL DATA
+plot3(Sx, Sy, FY_vec, '.', 'Color', [0.5 0.5 0.5], 'MarkerSize', 5, 'DisplayName', 'Experimental Data');
+
+% Plot the MODEL POINTS
+plot3(Sx, Sy, FY0_modslip, 'r.', 'MarkerSize', 6, 'DisplayName', 'Modulus Slip Model');
+
+% Formatting
+hL2 = camlight('headlight'); % Create light object
+hL2.Style = 'infinite';      % Parallel rays (brighter overall)
+lighting gouraud;
+s2.AmbientStrength = 0.7;
+s2.DiffuseStrength = 0.8;
+s2.SpecularStrength = 0.2;
+s2.FaceLighting = 'gouraud';
+colormap(jet); brighten(0.6); material shiny; camlight headlight; lighting phong;
+
+xlabel('$S_x$ [-]', 'Interpreter', 'latex'); 
+ylabel('$S_y$ [-]', 'Interpreter', 'latex'); 
+zlabel('$F_y$ [N]', 'Interpreter', 'latex');
+title('Lateral Force: Surface vs. Raw Data', 'Interpreter', 'latex');
+legend('Model Surface', 'Experimental Data', 'Model Points', 'Location', 'northeast');
+view(45, 30);
+grid on;
